@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+.ipynb_checkpoints/
+.DS_Store
+
+# datos y pesos pesados — no entran al repo
+data/voley.yolov8/
+data/raw/
+data/processed/
+weights/*.pt
+weights/*.pth
+!weights/.gitkeep
+
+# salidas
+runs/
+outputs/
+*.mp4
+*.avi

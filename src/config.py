@@ -16,8 +16,8 @@ NUM_CLASSES = len(CLASSES)
 IMG_SIZE = 416
 GRID_SIZE = 13
 NUM_BOXES_PER_CELL = 2
-DETECTOR_CONF_THRESHOLD = 0.10   # umbral bajado tras entrenamiento — modelo desde 0 con
-                                  # 270 imgs predice con confianza modesta (justificado en report)
+DETECTOR_CONF_THRESHOLD = 0.05   # umbral bajo — modelo entrenado desde 0 con 270 imgs
+                                  # predice con confianza modesta (justificado en report)
 DETECTOR_NMS_IOU = 0.45
 
 # CNN ② — heatmap pelota TrackNet-style

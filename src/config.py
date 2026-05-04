@@ -28,8 +28,11 @@ HEATMAP_INPUT_FRAMES = 3  # se concatenan 3 frames consecutivos en canal
 LSTM_INPUT_LEN = 30
 LSTM_OUTPUT_LEN = 10
 
-# MLP ① — clasificación de acción
-ACTION_CLASSES = ["saque", "ataque", "bloqueo", "recepcion", "colocacion"]
+# MLP ① — clasificación de zona de cancha del jugador
+# Etiquetas auto-generadas a partir de la posición del bbox (cy normalizado).
+# Ventaja: cero etiquetado manual. Demuestra MLP + extracción de features.
+ZONE_CLASSES = ["lejos", "medio", "cerca"]   # respecto a la cámara
+MLP_FEATURES = 14   # 6 geométricos + 8 estadísticos (color RGB mean/std + brillo + contraste)
 
 # Cancha FIVB en metros
 COURT_W_M = 18.0

@@ -135,13 +135,16 @@ class LiveTab(QWidget):
 
     def _annotate(self, result: dict) -> np.ndarray:
         frame = result["frame"].copy()
-        colors = {"pelota": (0, 255, 255), "persona": (0, 255, 0), "red": (255, 0, 0)}
+        colors = {"ball": (0, 255, 255), "player": (0, 255, 0), "referee": (255, 0, 255)}
         for det in result["detections"]:
             x1, y1, x2, y2 = [int(v) for v in det["box"]]
             color = colors.get(det["class"], (200, 200, 200))
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(frame, f"{det['class']} {det['score']:.2f}",
-                        (x1, max(20, y1 - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            label = f"{det['class']} {det['score']:.2f}"
+            if "zone" in det:
+                label += f" [{det['zone']}]"
+            cv2.putText(frame, label, (x1, max(20, y1 - 6)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         return frame
 
     def _render_court(self, result: dict) -> np.ndarray:

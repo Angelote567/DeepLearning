@@ -1,14 +1,14 @@
-"""① MLP — Clasificador de acción de jugador propio.
+"""① MLP — Clasificador de zona de cancha del jugador (custom, 100% PyTorch).
 
-Input: vector de features de 256 dimensiones (extraído de:
-    a) crop del jugador pasado por el encoder de la CNN ② (avgpool de e4 -> 256-D), o
-    b) features hand-crafted: 8 vectores velocidad de últimas 8 detecciones + altura de pelota
-       relativa + posición jugador en cancha 2D (32-D) + zero-pad).
+Diseño:
+* Input: vector 14-D de features hand-crafted extraídas del bbox + crop del jugador
+  - 6 geométricas: cx, cy, w, h, aspect_ratio, area_relativa
+  - 8 estadísticas: R_mean, G_mean, B_mean, brillo, std_R, std_G, std_B, contraste
+* Salida: 3 clases — lejos / medio / cerca (zona en la imagen, respecto a la cámara)
+* Etiquetas auto-generadas a partir de cy del bbox (sin etiquetado manual).
 
-Output: 5 clases — saque / ataque / bloqueo / recepción / colocación.
-
-Arquitectura: 3 capas fully-connected con dropout, BatchNorm y ReLU. Diseño clásico
-de MLP — sirve para defender activación, dropout y backprop en oral.
+Arquitectura: 3 capas fully-connected con BatchNorm + ReLU + Dropout — el clásico
+MLP que se defiende fácil en oral (activación, regularización, backprop).
 """
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.config import ACTION_CLASSES
+from src.config import MLP_FEATURES, ZONE_CLASSES
 
 
 class ActionMLP(nn.Module):
-    def __init__(self, in_features: int = 256, hidden: int = 128,
-                 num_classes: int = len(ACTION_CLASSES), dropout: float = 0.3) -> None:
+    def __init__(self, in_features: int = MLP_FEATURES, hidden: int = 64,
+                 num_classes: int = len(ZONE_CLASSES), dropout: float = 0.3) -> None:
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(in_features, hidden * 2),
@@ -45,3 +45,12 @@ class ActionMLP(nn.Module):
         probs = F.softmax(logits, dim=-1)
         cls = probs.argmax(dim=-1)
         return cls, probs
+
+
+def cy_to_zone(cy: float) -> int:
+    """Devuelve el id de zona (0=lejos, 1=medio, 2=cerca) a partir del cy normalizado."""
+    if cy < 0.45:
+        return 0
+    if cy < 0.72:
+        return 1
+    return 2

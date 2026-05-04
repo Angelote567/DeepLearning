@@ -101,10 +101,34 @@ class VolleyPipeline:
                 ball_xy_image = (pt[0] * w / HEATMAP_SIZE, pt[1] * h / HEATMAP_SIZE)
         if ball_xy_image is None:
             for d in result["detections"]:
-                if d["class"] == "pelota":
+                if d["class"] == "ball":
                     x1, y1, x2, y2 = d["box"]
                     ball_xy_image = ((x1 + x2) / 2, (y1 + y2) / 2)
                     break
+
+        # ① MLP — clasifica zona del jugador (lejos/medio/cerca) usando features hand-crafted
+        if self.mlp is not None and result["detections"]:
+            from src.config import ZONE_CLASSES
+            from src.data.action_dataset import extract_features
+            img_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+            feats_batch = []
+            player_idxs = []
+            for i, d in enumerate(result["detections"]):
+                if d["class"] != "player":
+                    continue
+                x1, y1, x2, y2 = d["box"]
+                cx = ((x1 + x2) / 2) / w
+                cy = ((y1 + y2) / 2) / h
+                bw = (x2 - x1) / w
+                bh = (y2 - y1) / h
+                feats = extract_features(img_rgb, (cx, cy, bw, bh))
+                feats_batch.append(feats)
+                player_idxs.append(i)
+            if feats_batch:
+                fbatch = torch.tensor(np.array(feats_batch), dtype=torch.float32).to(self.device)
+                cls, _ = self.mlp.predict(fbatch)
+                for i, c in zip(player_idxs, cls.tolist()):
+                    result["detections"][i]["zone"] = ZONE_CLASSES[c]
 
         # Mapeo a cancha + ④ LSTM trayectoria
         if ball_xy_image is not None and self.homography is not None:

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import cv2
 from PIL import Image
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
     QFileDialog,
@@ -71,7 +71,10 @@ class VLMTab(QWidget):
         if not path:
             return
         self.current_image = path
-        self.image_label.setPixmap(QPixmap(path).scaled(self.image_label.size(), aspectRatioMode=1))
+        self.image_label.setPixmap(QPixmap(path).scaled(
+            self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        ))
 
     def ask(self) -> None:
         if not self.current_image:

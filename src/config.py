@@ -4,10 +4,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 WEIGHTS_DIR = ROOT / "weights"
-DATASET_DIR = DATA_DIR / "voley.yolov8"
+DATASET_DIR = DATA_DIR / "volleyball-2"
 
-# Clases del dataset Roboflow (orden = id en los .txt YOLO)
-CLASSES = ["pelota", "persona", "red"]
+# Clases del dataset Roboflow `qc/volleyball-hwxp2` v2 (330 imágenes Tokio 2020).
+# El orden coincide con el id de la clase en los .txt YOLO. Si cambiamos de dataset,
+# hay que verificar este orden contra el `data.yaml` que descarga Roboflow.
+CLASSES = ["ball", "player", "referee"]
 NUM_CLASSES = len(CLASSES)
 
 # Detector ③ — YOLOv1-tiny
